@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# Cập nhật 12/2019
-
 # Cai dat Docker
 yum install -y yum-utils device-mapper-persistent-data lvm2
 yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
@@ -65,7 +63,7 @@ repo_gpgcheck=1
 gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
 EOF
 
-yum install -y -q kubeadm kubelet-1.25.5-00 kubectl
+yum install -y -q kubeadm kubelet kubectl
 
 systemctl enable kubelet
 systemctl start kubelet
@@ -73,7 +71,7 @@ systemctl start kubelet
 sudo yum install containerd.io
 sudo mkdir -p /etc/containerd
 sudo containerd config default | sudo tee /etc/containerd/config.toml
-sudo cp ./containerd-config.toml /etc/containerd/config.toml
+sudo cp /vagrant/containerd-config.toml /etc/containerd/config.toml
 sudo systemctl restart containerd
 
 # Configure NetworkManager before attempting to use Calico networking.
