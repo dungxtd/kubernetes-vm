@@ -2,6 +2,7 @@ apt:
   sources:
     kubernetes:
       source: deb http://apt.kubernetes.io/ kubernetes-xenial main
+      # key from https://packages.cloud.google.com/apt/doc/apt-key.gpg
       key: |
         -----BEGIN PGP PUBLIC KEY BLOCK-----
         mQENBGKItdQBCADWmKTNZEYWgXy73FvKFY5fRro4tGNa4Be4TZW3wZpct9Cj8Ejy
