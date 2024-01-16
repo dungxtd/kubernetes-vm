@@ -54,7 +54,8 @@ packages:
 - docker.io
 - kubelet
 - kubectl
-- kubeadm
+- - kubeadm
+  - 1.7.10-00
 write_files:
 - path: /etc/systemd/system/kubernetes-pods-enable-forward.service
   content: |
@@ -107,10 +108,10 @@ write_files:
       }
     }
 runcmd:
-- kubeadm init --skip-token-print
-- kubectl --kubeconfig /etc/kubernetes/admin.conf taint nodes --all node-role.kubernetes.io/master-
+- kubeadm init --skip-token-print --skip-preflight-checks --kubernetes-version stable-1.7
+# - kubectl --kubeconfig /etc/kubernetes/admin.conf taint nodes --all node-role.kubernetes.io/master
 - kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /etc/kubernetes/superuser.yaml
-- kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/recommended/kubernetes-dashboard.yaml
+- kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v1.7.1/src/deploy/recommended/kubernetes-dashboard.yaml
 - systemctl daemon-reload
 - systemctl enable kubernetes-pods-enable-forward.service
 - systemctl start kubernetes-pods-enable-forward.service

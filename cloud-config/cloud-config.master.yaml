@@ -1,0 +1,85 @@
+#cloud-config
+package_upgrade: true
+packages:
+- kubelet
+- kubectl
+- kubeadm
+- docker.io
+- apache2
+- ufw
+- apt-transport-https
+write_files:
+- path: /etc/systemd/system/kubernetes-pods-enable-forward.service
+  content: |
+    [Unit]
+    Description=Forward k8s pods network
+    DefaultDependencies=false
+    [Service]
+    Type=oneshot
+    RemainAfterExit=yes
+    ExecStart=/sbin/iptables -A FORWARD -d 10.22.0.0/16 -j ACCEPT
+    ExecStart=/sbin/iptables -A FORWARD -s 10.22.0.0/16 -j ACCEPT
+    ExecStop=
+    [Install]
+    WantedBy=sysinit.target
+- path: /etc/kubernetes/superuser.yaml
+  content: |
+    apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: superuser
+      namespace: kube-system
+    ---
+    apiVersion: rbac.authorization.k8s.io/v1beta1
+    kind: ClusterRoleBinding
+    metadata:
+      name: superuser
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: ClusterRole
+      name: cluster-admin
+    subjects:
+    - kind: ServiceAccount
+      name: superuser
+      namespace: kube-system
+- path: /etc/cni/net.d/10-cni.json
+  content: |
+    {
+      "cniVersion": "0.2.0",
+      "name": "my-kubenet",
+      "type": "bridge",
+      "bridge": "cni0",
+      "isGateway": true,
+      "ipMasq": true,
+      "ipam": {
+        "type": "host-local",
+        "subnet": "10.22.0.0/16",
+        "routes": [
+          { "dst": "0.0.0.0/0" }
+        ]
+      }
+    }
+- path: /var/www/html/index.html
+  content: |
+    <h1>Hello World</h1>
+runcmd:
+- ufw disable
+- swapoff -a
+- curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+- bash -c 'echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" > /etc/apt/sources.list.d/kubernetes.list'
+- systemctl enable kubelet
+- systemctl start kubelet
+- kubeadm init --apiserver-advertise-address=$(hostname -I | awk '{print $1}') --pod-network-cidr=10.244.0.0/16 --skip-token-print
+# - kubectl --kubeconfig /etc/kubernetes/admin.conf taint nodes --all node-role.kubernetes.io/master-
+# - kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /etc/kubernetes/superuser.yaml
+# - kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v1.7.1/src/deploy/recommended/kubernetes-dashboard.yaml
+# - systemctl daemon-reload
+# - systemctl enable kubernetes-pods-enable-forward.service
+# - systemctl start kubernetes-pods-enable-forward.service
+# - usermod -a -G docker ubuntu
+# - mkdir /home/ubuntu/.kube
+# - cp /etc/kubernetes/admin.conf /home/ubuntu/.kube/config
+# - chown -R ubuntu:ubuntu /home/ubuntu/.kube
+# - systemctl enable httpd
+# - systemctl start httpd
+

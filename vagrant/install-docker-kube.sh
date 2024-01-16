@@ -71,7 +71,7 @@ systemctl start kubelet
 sudo yum install containerd.io
 sudo mkdir -p /etc/containerd
 sudo containerd config default | sudo tee /etc/containerd/config.toml
-sudo cp /vagrant/containerd-config.toml /etc/containerd/config.toml
+sudo cp ./containerd-config.toml /etc/containerd/config.toml
 sudo systemctl restart containerd
 
 # Configure NetworkManager before attempting to use Calico networking.
