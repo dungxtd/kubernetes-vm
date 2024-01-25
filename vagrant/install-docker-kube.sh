@@ -12,17 +12,25 @@ mkdir /etc/docker
 # Setup daemon.
 cat > /etc/docker/daemon.json <<EOF
 {
-  "exec-opts": ["native.cgroupdriver=systemd"],
-  "log-driver": "json-file",
-  "log-opts": {
-    "max-size": "100m"
-  },
-  "storage-driver": "overlay2",
-  "storage-opts": [
-    "overlay2.override_kernel_check=true"
-  ]
+        "storage-driver": "overlay2",
+        "log-driver": "journald",
+        "selinux-enabled": true
 }
 EOF
+
+# cat > /etc/docker/daemon.json <<EOF
+# {
+#   "exec-opts": ["native.cgroupdriver=systemd"],
+#   "log-driver": "json-file",
+#   "log-opts": {
+#     "max-size": "100m"
+#   },
+#   "storage-driver": "overlay2",
+#   "storage-opts": [
+#     "overlay2.override_kernel_check=true"
+#   ]
+# }
+# EOF
 
 mkdir -p /etc/systemd/system/docker.service.d
 
@@ -71,8 +79,8 @@ systemctl start kubelet
 sudo yum install containerd.io
 sudo mkdir -p /etc/containerd
 sudo containerd config default | sudo tee /etc/containerd/config.toml
-sudo cp ./containerd-config.toml /etc/containerd/config.toml
-sudo systemctl restart containerd
+sudo cp ./containerd-config.toml /etc/containerd/config.toml 
+sudo systemctl start docker
 
 # Configure NetworkManager before attempting to use Calico networking.
 cat >>/etc/NetworkManager/conf.d/calico.conf<<EOF
